@@ -1,0 +1,69 @@
+---
+- name: Install and configure HAProxy for Load Balancing
+  hosts: loadbalancer
+  become: yes
+  tasks:
+    - name: Update the package cache
+      yum:
+        name: '*'
+        state: latest
+      become: yes
+
+    - name: Install HAProxy
+      yum:
+        name: haproxy
+        state: present
+      become: yes
+
+    - name: Configure HAProxy
+      template:
+        src: haproxy2.cfg.j2
+        dest: /etc/haproxy/haproxy.cfg
+      notify: Restart HAProxy
+
+    - name: Ensure HAProxy service is enabled and started
+      systemd:
+        name: haproxy
+        enabled: yes
+        state: started
+
+  handlers:
+    - name: Restart HAProxy
+      service:
+        name: haproxy
+        state: restarted
+
+- name: Install and configure web servers
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Update the package cache
+      yum:
+        name: '*'
+        state: latest
+      become: yes
+
+    - name: Install Apache
+      yum:
+        name: httpd
+        state: present
+      become: yes
+
+    - name: Ensure Apache service is enabled and started
+      systemd:
+        name: httpd
+        enabled: yes
+        state: started
+
+- name: Add backend servers to HAProxy group
+  hosts: webservers
+  tasks:
+    - name: Add server to HAProxy configuration
+      lineinfile:
+        path: /etc/haproxy/haproxy.cfg
+        line: "    server {{ inventory_hostname }} {{ hostvars[inventory_hostname]['ansible_host'] }}:80 check"
+
+    - name: Restart HAProxy
+      service:
+        name: haproxy
+        state: restarted

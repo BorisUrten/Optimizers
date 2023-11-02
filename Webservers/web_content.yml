@@ -1,0 +1,33 @@
+---
+- name: Install Apache and Enable Firewall
+  hosts: IP
+     - IP
+     - IP
+  become: yes
+
+  tasks:
+    - name: Update package cache
+      yum:
+        name: "*"
+        state: latest
+      become: yes
+
+    - name: Install Apache (httpd) package
+      yum:
+        name: httpd
+        state: present
+      become: yes
+
+    - name: Start and enable Apache service
+      systemd:
+        name: httpd
+        enabled: yes
+        state: started
+      become: yes
+
+    - name: Allow HTTP traffic in the firewall
+      firewalld:
+        service: http
+        permanent: yes
+        state: enabled
+      become: yes
