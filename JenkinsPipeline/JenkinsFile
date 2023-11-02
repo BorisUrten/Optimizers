@@ -1,0 +1,44 @@
+pipeline {
+    agent any
+
+    environment {
+        // Set your AWS access key and secret access key as environment variables
+        AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+    }
+
+    stages {
+        stage('Prep') {
+            steps {
+                script {
+                    // Use 'Username with password' credentials for GitHub
+                    withCredentials([usernamePassword(credentialsId: 'GitHub_Credentials', usernameVariable: 'MY_GITHUB_USERNAME', passwordVariable: 'MY_GITHUB_PASSWORD')]) {
+                        git credentialsId: 'GitHub_Credentials', url: 'https://github.com/nickchim98/devops-project.git', branch: 'main'
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                script {
+                    // Define the Terraform tool
+                    tool name: 'Terraform'
+                    
+                    // Execute Terraform commands
+                    sh 'terraform init'
+                    sh 'terraform apply -auto-approve'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Deployment successful!'
+        }
+        failure {
+            echo 'Deployment failed!'
+        }
+    }
+}
