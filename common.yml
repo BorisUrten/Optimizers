@@ -1,0 +1,11 @@
+---
+- name: install common packages on all boxes
+  hosts: all
+  remote_user: ansible
+  become: yes
+
+  tasks:
+  - name: install all common packages
+    yum:
+      name: ['bind-utils', 'man', 'man-pages', 'mlocate', 'sysstat']
+      state: latest
