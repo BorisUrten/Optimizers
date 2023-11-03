@@ -1,0 +1,28 @@
+---
+- name: Add Welcome Message to /var/www/html/welcome.html
+  hosts:
+    - IP
+    - IP
+    - IP
+  become: yes
+
+  tasks:
+    - name: Create a welcome message file
+      copy:
+        content: "Hello Team Optimizers Welcome Server!\n"
+        dest: /var/www/html/welcome.html
+      notify: Restart Apache Service
+
+    - name: Ensure Apache service is running
+      systemd:
+        name: httpd
+        state: started
+      become: yes
+      notify: Restart Apache Service
+
+  handlers:
+    - name: Restart Apache Service
+      service:
+        name: httpd
+        state: restarted
+      become: yes
