@@ -1,0 +1,23 @@
+---
+- name: Install and configure MariaDB
+  hosts: 192.168.150.17
+  become: yes
+  tasks:
+    - name: Install MariaDB
+      yum:
+        name: mariadb-server
+        state: present
+
+    - name: Start MariaDB service
+      service:
+        name: mariadb
+        state: started
+
+- name: Copy database.sql to the database server
+  hosts: 192.168.150.17
+  tasks:
+    - name: Copy file to remote host
+      copy:
+        src: /home/ansible/database/database.sql  # Replace with the actual path to database.sql
+        dest: /var/lib/mysql/database.sql  # Replace with the destination path on the remote server
+      become: yes
