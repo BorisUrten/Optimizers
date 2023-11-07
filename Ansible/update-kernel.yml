@@ -1,0 +1,24 @@
+---
+- name: Update Kernel
+  hosts: all
+  remote_user: ansible
+  become: yes
+  tasks:
+    - name: Update the kernel
+      yum:
+        name: kernel
+        state: latest
+      when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+      register: kernel_update
+
+    - name: Reboot if kernel was updated
+      reboot:
+      when: kernel_update.changed
+
+    - name: Verify kernel version
+      command: uname -r
+      register: current_kernel
+
+    - name: Display current kernel version
+      debug:
+        var: current_kernel.stdout
